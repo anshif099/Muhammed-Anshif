@@ -579,7 +579,8 @@
                 children: [(0, a.jsxs)("nav", {
                     className: "flex min-h-[50px] items-center justify-between gap-[18px] py-[9px]",
                     children: [(0, a.jsx)("a", {
-                        href: "/",
+                        href: "/?skipIntro=1",
+                        "data-home-link": true,
                         "aria-label": "Muhammed Anshif — home",
                         className: "cursor-pointer whitespace-nowrap select-none font-display text-[22px] font-normal tracking-[-0.01em] text-ink no-underline",
                         children: "Muhammed Anshif"

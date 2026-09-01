@@ -186,6 +186,17 @@
     }
 
     document.addEventListener("click", (event) => {
+        const homeLink = event.target.closest("[data-home-link]")
+        if (!homeLink || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+        if (window.location.pathname !== "/" && !window.location.pathname.endsWith("/index.html")) return
+
+        event.preventDefault()
+        event.stopImmediatePropagation()
+        window.history.replaceState(null, "", "/")
+        window.scrollTo({ top: 0, behavior: "smooth" })
+    }, true)
+
+    document.addEventListener("click", (event) => {
         const caseLink = event.target.closest(
             '[data-case-intro], a[href="/case-files/beek-perfumes"], a[href="/case-files/beek-perfumes/"]'
         )
@@ -203,5 +214,12 @@
         })
     }, true)
 
-    requestAnimationFrame(() => startIntro())
+    const pageUrl = new URL(window.location.href)
+    const skipInitialIntro = pageUrl.searchParams.get("skipIntro") === "1"
+    if (skipInitialIntro) {
+        pageUrl.searchParams.delete("skipIntro")
+        window.history.replaceState(null, "", `${pageUrl.pathname}${pageUrl.search}${pageUrl.hash}`)
+    } else {
+        requestAnimationFrame(() => startIntro())
+    }
 })()
