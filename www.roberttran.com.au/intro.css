@@ -1,0 +1,78 @@
+body.fm-local-active {
+    overflow: hidden;
+}
+
+.fm-local-intro .fm-scene--mag-clip {
+    z-index: 2;
+}
+
+.fm-local-intro .fm-scene--mag {
+    transition: transform 90ms linear;
+}
+
+.fm-local-intro .fm-local-shade {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+}
+
+.fm-local-intro .fm-masthead-t {
+    font-size: clamp(14px, 2vw, 22px);
+}
+
+.fm-local-intro .fm-stamp {
+    opacity: 0;
+    text-align: center;
+    transform: translateY(-48px) scale(1.55) rotate(-14deg);
+}
+
+.fm-local-intro .fm-stamp small {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.34em;
+    letter-spacing: 0.3em;
+}
+
+.fm-local-intro.fm-local-locked .fm-stamp {
+    animation: fm-local-stamp 560ms cubic-bezier(.34, 1.56, .64, 1) forwards;
+}
+
+.fm-local-intro.fm-local-locked .fm-lens {
+    animation: fm-local-lens-lock 650ms cubic-bezier(.22, 1, .36, 1) forwards;
+}
+
+.fm-local-intro.fm-local-locked .fm-scene--base {
+    opacity: 0.85;
+    filter: blur(0);
+}
+
+@keyframes fm-local-stamp {
+    0% {
+        opacity: 0;
+        transform: translateY(-48px) scale(1.55) rotate(-14deg);
+    }
+
+    70% {
+        opacity: 1;
+        transform: translateY(4px) scale(0.94) rotate(-8deg);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotate(-10deg);
+    }
+}
+
+@keyframes fm-local-lens-lock {
+    to {
+        opacity: 0;
+        transform: rotate(2deg) scale(1.08);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fm-local-intro {
+        display: none;
+    }
+}
