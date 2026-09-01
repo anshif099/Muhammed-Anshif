@@ -47,6 +47,17 @@ body.fm-local-active {
     filter: blur(0);
 }
 
+.fm-local-intro.fm-local-navigating {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: all !important;
+}
+
+.fm-local-intro.fm-local-navigating .fm-skip {
+    opacity: 0;
+    pointer-events: none;
+}
+
 @keyframes fm-local-stamp {
     0% {
         opacity: 0;

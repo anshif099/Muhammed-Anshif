@@ -80,6 +80,7 @@
         let lastMove = performance.now()
         let targetSince = 0
         let locked = false
+        let finishing = false
         let animationFrame = 0
 
         const lensRadius = () => Math.round(
@@ -121,15 +122,25 @@
         }
 
         const finish = () => {
-            if (!activeIntro) return
+            if (!activeIntro || finishing) return
+            finishing = true
             cancelAnimationFrame(animationFrame)
+
+            if (navigateTo) {
+                intro.classList.add("fm-local-navigating")
+                hint.textContent = `Opening case file — ${name}`
+                skip.disabled = true
+                window.dispatchEvent(new Event("rt-intro-done"))
+                requestAnimationFrame(() => window.location.assign(navigateTo))
+                return
+            }
+
             intro.classList.add("fm-intro--exit")
             document.body.classList.remove("fm-local-active")
             window.dispatchEvent(new Event("rt-intro-done"))
             setTimeout(() => {
                 intro.remove()
                 if (activeIntro === intro) activeIntro = null
-                if (navigateTo) window.location.assign(navigateTo)
             }, 480)
         }
 
@@ -182,6 +193,10 @@
 
         event.preventDefault()
         event.stopImmediatePropagation()
+        fetch(caseLink.href, {
+            credentials: "same-origin",
+            cache: "force-cache"
+        }).catch(() => {})
         startIntro({
             name: caseLink.dataset.caseName || "Beek Perfumes",
             navigateTo: caseLink.href
