@@ -8,12 +8,21 @@
       "source": "/index.html",
       "destination": "/",
       "permanent": true
+    },
+    {
+      "source": "/case-files/caitlyn-nails",
+      "destination": "/case-files/beek-perfumes/",
+      "permanent": true
     }
   ],
   "rewrites": [
     {
-      "source": "/case-files/:path*",
-      "destination": "/"
+      "source": "/case-files/beek-perfumes",
+      "destination": "/case-files/beek-perfumes/index.html"
+    },
+    {
+      "source": "/case-files/beek-perfumes/",
+      "destination": "/case-files/beek-perfumes/index.html"
     }
   ],
   "headers": [

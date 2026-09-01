@@ -20,27 +20,30 @@
         return `<div class="fm-col"><div class="fm-col-h">${name}</div><div class="fm-col-r"></div>${lines}</div>`
     }
 
-    const sceneMarkup = () => `
+    const sceneMarkup = (name) => `
         ${columnNames.map(columnMarkup).join("")}
         <div class="fm-masthead">
             <div class="fm-masthead-k">Wanted</div>
-            <div class="fm-masthead-t">${subjectName}</div>
+            <div class="fm-masthead-t">${name}</div>
             <div class="fm-masthead-r"></div>
         </div>
     `
 
-    const startIntro = () => {
-        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    const startIntro = ({ name = subjectName, navigateTo = "" } = {}) => {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            if (navigateTo) window.location.assign(navigateTo)
+            return
+        }
         if (activeIntro) activeIntro.remove()
 
         window.scrollTo(0, 0)
         document.body.classList.add("fm-local-active")
 
-        const scene = sceneMarkup()
+        const scene = sceneMarkup(name)
         const intro = document.createElement("div")
         intro.className = "fm-intro fm-local-intro"
         intro.setAttribute("role", "dialog")
-        intro.setAttribute("aria-label", `Find ${subjectName}`)
+        intro.setAttribute("aria-label", `Find ${name}`)
         intro.innerHTML = `
             <div class="fm-zoom">
                 <div class="fm-scene fm-scene--base">${scene}</div>
@@ -55,10 +58,10 @@
                 </div>
                 <div class="fm-grain"></div>
                 <div class="fm-stampwrap" aria-live="polite">
-                    <div class="fm-stamp">${subjectName}<small>Identified</small></div>
+                    <div class="fm-stamp">${name}<small>Identified</small></div>
                 </div>
             </div>
-            <div class="fm-hint">Take the glass — find ${subjectName}</div>
+            <div class="fm-hint">Take the glass — find ${name}</div>
             <button class="fm-skip" type="button">Skip intro →</button>
         `
 
@@ -126,6 +129,7 @@
             setTimeout(() => {
                 intro.remove()
                 if (activeIntro === intro) activeIntro = null
+                if (navigateTo) window.location.assign(navigateTo)
             }, 480)
         }
 
@@ -136,7 +140,7 @@
             y = window.innerHeight / 2
             draw()
             intro.classList.add("fm-local-locked")
-            hint.textContent = `Subject found — ${subjectName}`
+            hint.textContent = `Subject found — ${name}`
             setTimeout(finish, 1450)
         }
 
@@ -170,5 +174,19 @@
         }, true)
     }
 
-    requestAnimationFrame(startIntro)
+    document.addEventListener("click", (event) => {
+        const caseLink = event.target.closest(
+            '[data-case-intro], a[href="/case-files/beek-perfumes"], a[href="/case-files/beek-perfumes/"]'
+        )
+        if (!caseLink || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+
+        event.preventDefault()
+        event.stopImmediatePropagation()
+        startIntro({
+            name: caseLink.dataset.caseName || "Beek Perfumes",
+            navigateTo: caseLink.href
+        })
+    }, true)
+
+    requestAnimationFrame(() => startIntro())
 })()
