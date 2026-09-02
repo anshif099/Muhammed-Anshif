@@ -243,7 +243,7 @@
 
     document.addEventListener("click", (event) => {
         const caseLink = event.target.closest(
-            '[data-case-intro], a[href="/case-files/beek-perfumes"], a[href="/case-files/beek-perfumes/"]'
+            '[data-case-intro], a[href="/case-files/beek-perfumes"], a[href="/case-files/beek-perfumes/"], a[href="/case-files/monkey-tribe"], a[href="/case-files/monkey-tribe/"]'
         )
         if (!caseLink || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
 
@@ -253,8 +253,11 @@
             credentials: "same-origin",
             cache: "force-cache"
         }).catch(() => {})
+        const projectName = caseLink.dataset.caseName || (
+            new URL(caseLink.href).pathname.includes("monkey-tribe") ? "Monkey Tribe" : "Beek Perfumes"
+        )
         startIntro({
-            name: caseLink.dataset.caseName || "Beek Perfumes",
+            name: projectName,
             navigateTo: caseLink.href
         })
     }, true)
