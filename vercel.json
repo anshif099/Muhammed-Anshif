@@ -18,6 +18,11 @@
       "source": "/case-files/pakko-shop",
       "destination": "/case-files/monkey-tribe/",
       "permanent": true
+    },
+    {
+      "source": "/case-files/pakko-quote",
+      "destination": "/case-files/porto/",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -36,6 +41,14 @@
     {
       "source": "/case-files/monkey-tribe/",
       "destination": "/case-files/monkey-tribe/index.html"
+    },
+    {
+      "source": "/case-files/porto",
+      "destination": "/case-files/porto/index.html"
+    },
+    {
+      "source": "/case-files/porto/",
+      "destination": "/case-files/porto/index.html"
     }
   ],
   "headers": [
