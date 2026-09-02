@@ -9,6 +9,51 @@
     ]
 
     let activeIntro = null
+    let dateAnimationStarted = false
+
+    const currentDateLabel = () => {
+        const parts = new Intl.DateTimeFormat("en-GB", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+        }).formatToParts(new Date())
+        const part = (type) => parts.find((item) => item.type === type)?.value || ""
+        return `${part("weekday")} ${part("day")} ${part("month")} ${part("year")}`
+    }
+
+    const animateCurrentDate = () => {
+        if (dateAnimationStarted) return
+        dateAnimationStarted = true
+
+        const dateWrap = document.querySelector("[data-current-date]")
+        const dateMeasure = dateWrap?.querySelector("[data-date-measure]")
+        const dateOutput = dateWrap?.querySelector("[data-date-output]")
+        if (!dateWrap || !dateMeasure || !dateOutput) return
+
+        const fullDate = currentDateLabel()
+        dateWrap.setAttribute("aria-label", fullDate)
+        dateMeasure.textContent = fullDate
+
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            dateOutput.textContent = fullDate
+            return
+        }
+
+        let characterIndex = 0
+        dateOutput.textContent = "|"
+
+        const typeNextCharacter = () => {
+            characterIndex += 1
+            const typedDate = fullDate.slice(0, characterIndex)
+            dateOutput.textContent = characterIndex < fullDate.length ? `${typedDate}|` : typedDate
+            if (characterIndex < fullDate.length) {
+                window.setTimeout(typeNextCharacter, 38 + Math.random() * 34)
+            }
+        }
+
+        window.setTimeout(typeNextCharacter, 180)
+    }
 
     const columnMarkup = (name, columnIndex) => {
         const lines = Array.from({ length: 60 }, (_, lineIndex) => {
@@ -219,7 +264,14 @@
     if (skipInitialIntro) {
         pageUrl.searchParams.delete("skipIntro")
         window.history.replaceState(null, "", `${pageUrl.pathname}${pageUrl.search}${pageUrl.hash}`)
+        requestAnimationFrame(() => animateCurrentDate())
     } else {
+        window.addEventListener("rt-intro-done", () => {
+            window.setTimeout(animateCurrentDate, 480)
+        }, { once: true })
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            requestAnimationFrame(() => animateCurrentDate())
+        }
         requestAnimationFrame(() => startIntro())
     }
 })()
