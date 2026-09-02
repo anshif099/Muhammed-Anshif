@@ -27,13 +27,11 @@
         dateAnimationStarted = true
 
         const dateWrap = document.querySelector("[data-current-date]")
-        const dateMeasure = dateWrap?.querySelector("[data-date-measure]")
         const dateOutput = dateWrap?.querySelector("[data-date-output]")
-        if (!dateWrap || !dateMeasure || !dateOutput) return
+        if (!dateWrap || !dateOutput) return
 
         const fullDate = currentDateLabel()
         dateWrap.setAttribute("aria-label", fullDate)
-        dateMeasure.textContent = fullDate
 
         if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
             dateOutput.textContent = fullDate
