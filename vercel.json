@@ -28,6 +28,11 @@
       "source": "/case-files/pakko-idp",
       "destination": "/case-files/ben10hits/",
       "permanent": true
+    },
+    {
+      "source": "/case-files/leartist-wedding",
+      "destination": "/case-files/rain-architecture/",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -62,6 +67,14 @@
     {
       "source": "/case-files/ben10hits/",
       "destination": "/case-files/ben10hits/index.html"
+    },
+    {
+      "source": "/case-files/rain-architecture",
+      "destination": "/case-files/rain-architecture/index.html"
+    },
+    {
+      "source": "/case-files/rain-architecture/",
+      "destination": "/case-files/rain-architecture/index.html"
     }
   ],
   "headers": [
