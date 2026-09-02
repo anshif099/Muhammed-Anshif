@@ -33,6 +33,11 @@
       "source": "/case-files/leartist-wedding",
       "destination": "/case-files/rain-architecture/",
       "permanent": true
+    },
+    {
+      "source": "/case-files/abc-allied-health",
+      "destination": "/case-files/rdx-company/",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -75,6 +80,14 @@
     {
       "source": "/case-files/rain-architecture/",
       "destination": "/case-files/rain-architecture/index.html"
+    },
+    {
+      "source": "/case-files/rdx-company",
+      "destination": "/case-files/rdx-company/index.html"
+    },
+    {
+      "source": "/case-files/rdx-company/",
+      "destination": "/case-files/rdx-company/index.html"
     }
   ],
   "headers": [

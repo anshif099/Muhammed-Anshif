@@ -241,7 +241,7 @@
 
     document.addEventListener("click", (event) => {
         const caseLink = event.target.closest(
-            '[data-case-intro], a[href="/case-files/beek-perfumes"], a[href="/case-files/beek-perfumes/"], a[href="/case-files/monkey-tribe"], a[href="/case-files/monkey-tribe/"], a[href="/case-files/porto"], a[href="/case-files/porto/"], a[href="/case-files/ben10hits"], a[href="/case-files/ben10hits/"], a[href="/case-files/rain-architecture"], a[href="/case-files/rain-architecture/"]'
+            '[data-case-intro], a[href="/case-files/beek-perfumes"], a[href="/case-files/beek-perfumes/"], a[href="/case-files/monkey-tribe"], a[href="/case-files/monkey-tribe/"], a[href="/case-files/porto"], a[href="/case-files/porto/"], a[href="/case-files/ben10hits"], a[href="/case-files/ben10hits/"], a[href="/case-files/rain-architecture"], a[href="/case-files/rain-architecture/"], a[href="/case-files/rdx-company"], a[href="/case-files/rdx-company/"]'
         )
         if (!caseLink || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
 
@@ -257,6 +257,7 @@
             projectPath.includes("porto") ? "PORTO" :
             projectPath.includes("ben10hits") ? "Ben10Hits" :
             projectPath.includes("rain-architecture") ? "Rain Architecture" :
+            projectPath.includes("rdx-company") ? "RDX Company" :
             "Beek Perfumes"
         )
         startIntro({
