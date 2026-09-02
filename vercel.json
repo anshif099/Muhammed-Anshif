@@ -38,6 +38,11 @@
       "source": "/case-files/abc-allied-health",
       "destination": "/case-files/rdx-company/",
       "permanent": true
+    },
+    {
+      "source": "/case-files/vn-care",
+      "destination": "/case-files/triosis-digital/",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -88,6 +93,14 @@
     {
       "source": "/case-files/rdx-company/",
       "destination": "/case-files/rdx-company/index.html"
+    },
+    {
+      "source": "/case-files/triosis-digital",
+      "destination": "/case-files/triosis-digital/index.html"
+    },
+    {
+      "source": "/case-files/triosis-digital/",
+      "destination": "/case-files/triosis-digital/index.html"
     }
   ],
   "headers": [
