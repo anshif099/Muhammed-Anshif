@@ -32,9 +32,12 @@
 
         const fullDate = currentDateLabel()
         dateWrap.setAttribute("aria-label", fullDate)
-        // A single update avoids repeatedly recalculating layout for the entire
-        // long-form page while keeping the date current for every visit.
+        dateWrap.style.setProperty("--fm-date-steps", fullDate.length)
+        // Set the text once, then use a stepped clip animation. This restores
+        // the typewriter effect without changing the page layout per letter.
         dateOutput.textContent = fullDate
+        dateOutput.classList.add("fm-date-typing")
+        dateWrap.classList.add("fm-date-is-typing")
     }
 
     const columnMarkup = (name, columnIndex) => {
@@ -145,8 +148,8 @@
                 { x: width / 2, y: height / 2 }
             ]
         })() : []
-        // Five search legs at 500 ms each make the full scan last 2.5 seconds.
-        const autoLegDuration = 500
+        // Five search legs at 800 ms each make the full scan last 4 seconds.
+        const autoLegDuration = 800
         const autoStartedAt = performance.now()
 
         const draw = (time = performance.now()) => {
@@ -233,7 +236,8 @@
             draw()
             intro.classList.add("fm-local-locked")
             hint.textContent = `Subject found — ${name}`
-            setTimeout(finish, autoPilot ? 300 : 1450)
+            // Let the slower identification stamp finish and remain readable.
+            setTimeout(finish, 1800)
         }
 
         const moveLens = (event) => {
