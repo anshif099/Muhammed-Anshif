@@ -56,7 +56,7 @@
         </div>
     `
 
-    const startIntro = ({ name = subjectName, navigateTo = "" } = {}) => {
+    const startIntro = ({ name = subjectName, navigateTo = "", autoPilot = false } = {}) => {
         if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
             if (navigateTo) window.location.assign(navigateTo)
             return
@@ -88,7 +88,7 @@
                     <div class="fm-stamp">${name}<small>Identified</small></div>
                 </div>
             </div>
-            <div class="fm-hint">Take the glass — find ${name}</div>
+            <div class="fm-hint">${autoPilot ? `Scanning the perimeter — locating ${name}` : `Take the glass — find ${name}`}</div>
             <button class="fm-skip" type="button">Skip intro →</button>
         `
 
@@ -109,27 +109,80 @@
         let locked = false
         let finishing = false
         let animationFrame = 0
+        let autoPilotActive = autoPilot
 
         const lensRadius = () => Math.round(
             Math.min(104, Math.max(82, Math.min(window.innerWidth, window.innerHeight) * 0.12))
         )
+
+        const randomBetween = (minimum, maximum) => minimum + Math.random() * (maximum - minimum)
+        const shuffled = (items) => {
+            const result = [...items]
+            for (let index = result.length - 1; index > 0; index -= 1) {
+                const swapIndex = Math.floor(Math.random() * (index + 1))
+                ;[result[index], result[swapIndex]] = [result[swapIndex], result[index]]
+            }
+            return result
+        }
+
+        const autoPath = autoPilot ? (() => {
+            const radius = lensRadius()
+            const edge = radius + 20
+            const width = window.innerWidth
+            const height = window.innerHeight
+            const horizontalMaximum = Math.max(edge, width - edge)
+            const verticalMaximum = Math.max(edge, height - edge)
+            const fourSides = shuffled([
+                { x: randomBetween(edge, horizontalMaximum), y: edge },
+                { x: horizontalMaximum, y: randomBetween(edge, verticalMaximum) },
+                { x: randomBetween(edge, horizontalMaximum), y: verticalMaximum },
+                { x: edge, y: randomBetween(edge, verticalMaximum) }
+            ])
+
+            return [
+                { x, y },
+                ...fourSides,
+                { x: width / 2, y: height / 2 }
+            ]
+        })() : []
+        const autoLegDuration = 120
+        const autoStartedAt = performance.now()
 
         const draw = (time = performance.now()) => {
             const radius = lensRadius()
             const centerX = window.innerWidth / 2
             const centerY = window.innerHeight / 2
 
-            if (!locked && time - lastMove > 3500) {
+            if (autoPilotActive) {
+                const elapsed = Math.max(0, time - autoStartedAt)
+                const segmentIndex = Math.max(0, Math.min(
+                    Math.floor(elapsed / autoLegDuration),
+                    autoPath.length - 2
+                ))
+                const segmentProgress = Math.min(1, (elapsed % autoLegDuration) / autoLegDuration)
+                const easedProgress = segmentProgress < 0.5
+                    ? 2 * segmentProgress * segmentProgress
+                    : 1 - Math.pow(-2 * segmentProgress + 2, 2) / 2
+                const from = autoPath[segmentIndex]
+                const to = autoPath[segmentIndex + 1]
+                x = from.x + (to.x - from.x) * easedProgress
+                y = from.y + (to.y - from.y) * easedProgress
+
+                if (elapsed >= autoLegDuration * (autoPath.length - 1)) {
+                    autoPilotActive = false
+                    lockOnSubject()
+                    return
+                }
+            } else if (!locked && time - lastMove > 3500) {
                 x += (centerX - x) * 0.025
                 y += (centerY - y) * 0.025
             }
 
             lens.style.width = `${radius * 2}px`
             lens.style.height = `${radius * 2}px`
-            lens.style.margin = "0"
-            lens.style.left = `${x - radius}px`
-            lens.style.top = `${y - radius}px`
-            lens.style.transform = "rotate(-10deg)"
+            lens.style.setProperty("--fm-lens-x", `${x - radius}px`)
+            lens.style.setProperty("--fm-lens-y", `${y - radius}px`)
+            lens.style.transform = "translate3d(var(--fm-lens-x), var(--fm-lens-y), 0) rotate(-10deg)"
 
             clip.style.clipPath = `circle(${radius}px at ${x}px ${y}px)`
             clip.style.webkitClipPath = `circle(${radius}px at ${x}px ${y}px)`
@@ -138,7 +191,7 @@
             shade.style.background = `radial-gradient(circle at ${x}px ${y}px, transparent ${radius - 4}px, rgba(22,20,15,.26) ${radius + 190}px, rgba(22,20,15,.42) 62%)`
 
             const distance = Math.hypot(x - centerX, y - centerY)
-            if (!locked && distance < radius * 0.58) {
+            if (!autoPilotActive && !locked && distance < radius * 0.58) {
                 if (!targetSince) targetSince = time
                 if (time - targetSince > 320) lockOnSubject()
             } else {
@@ -179,11 +232,11 @@
             draw()
             intro.classList.add("fm-local-locked")
             hint.textContent = `Subject found — ${name}`
-            setTimeout(finish, 1450)
+            setTimeout(finish, autoPilot ? 300 : 1450)
         }
 
         const moveLens = (event) => {
-            if (locked) return
+            if (locked || autoPilotActive) return
             x = event.clientX
             y = event.clientY
             lastMove = performance.now()
@@ -208,7 +261,7 @@
         replayButton.addEventListener("click", (event) => {
             event.preventDefault()
             event.stopImmediatePropagation()
-            startIntro()
+            startIntro({ autoPilot: true })
         }, true)
     }
 
@@ -332,12 +385,13 @@
         )
         startIntro({
             name: projectName,
-            navigateTo: caseLink.href
+            navigateTo: caseLink.href,
+            autoPilot: true
         })
     }, true)
 
     const pageUrl = new URL(window.location.href)
-    const playInitialIntro = pageUrl.searchParams.get("intro") === "1"
+    const skipInitialIntro = pageUrl.searchParams.get("skipIntro") === "1"
     const hasIntroParameter = pageUrl.searchParams.has("intro") || pageUrl.searchParams.has("skipIntro")
     pageUrl.searchParams.delete("intro")
     pageUrl.searchParams.delete("skipIntro")
@@ -345,16 +399,16 @@
         window.history.replaceState(null, "", `${pageUrl.pathname}${pageUrl.search}${pageUrl.hash}`)
     }
 
-    // Keep the cinematic intro available on demand without making first paint
-    // wait for a multi-second animation. Add ?intro=1 to deep-link to it.
-    if (playInitialIntro) {
+    // Run the cinematic preloader automatically. The lens checks all four
+    // randomized edges before moving to the subject in the centre.
+    if (!skipInitialIntro) {
         window.addEventListener("rt-intro-done", () => {
             window.setTimeout(animateCurrentDate, 480)
         }, { once: true })
         if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
             requestAnimationFrame(() => animateCurrentDate())
         }
-        requestAnimationFrame(() => startIntro())
+        requestAnimationFrame(() => startIntro({ autoPilot: true }))
     } else {
         requestAnimationFrame(() => animateCurrentDate())
     }

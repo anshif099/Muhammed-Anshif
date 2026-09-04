@@ -1,3 +1,7 @@
+html {
+    scrollbar-gutter: stable;
+}
+
 body.fm-local-active {
     overflow: hidden;
 }
@@ -8,6 +12,13 @@ body.fm-local-active {
 
 .fm-local-intro .fm-scene--mag {
     transition: transform 90ms linear;
+}
+
+.fm-local-intro .fm-lens {
+    left: 0;
+    top: 0;
+    margin: 0;
+    will-change: transform;
 }
 
 .fm-local-intro .fm-local-shade {
@@ -78,7 +89,7 @@ body.fm-local-active {
 @keyframes fm-local-lens-lock {
     to {
         opacity: 0;
-        transform: rotate(2deg) scale(1.08);
+        transform: translate3d(var(--fm-lens-x), var(--fm-lens-y), 0) rotate(2deg) scale(1.08);
     }
 }
 
