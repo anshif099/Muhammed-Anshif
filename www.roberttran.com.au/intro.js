@@ -32,25 +32,9 @@
 
         const fullDate = currentDateLabel()
         dateWrap.setAttribute("aria-label", fullDate)
-
-        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-            dateOutput.textContent = fullDate
-            return
-        }
-
-        let characterIndex = 0
-        dateOutput.textContent = "|"
-
-        const typeNextCharacter = () => {
-            characterIndex += 1
-            const typedDate = fullDate.slice(0, characterIndex)
-            dateOutput.textContent = characterIndex < fullDate.length ? `${typedDate}|` : typedDate
-            if (characterIndex < fullDate.length) {
-                window.setTimeout(typeNextCharacter, 38 + Math.random() * 34)
-            }
-        }
-
-        window.setTimeout(typeNextCharacter, 180)
+        // A single update avoids repeatedly recalculating layout for the entire
+        // long-form page while keeping the date current for every visit.
+        dateOutput.textContent = fullDate
     }
 
     const columnMarkup = (name, columnIndex) => {
@@ -228,6 +212,91 @@
         }, true)
     }
 
+    // The page is server-rendered HTML, so these small native handlers replace
+    // the much larger React hydration runtime that the static snapshot shipped.
+    const menuButton = document.querySelector('button[aria-label="Open menu"]')
+    const menuPanel = menuButton?.closest("nav")?.nextElementSibling
+    const menuBars = menuButton ? Array.from(menuButton.children) : []
+
+    const setMenuOpen = (open) => {
+        if (!menuButton || !menuPanel) return
+
+        menuButton.setAttribute("aria-expanded", String(open))
+        menuButton.setAttribute("aria-label", open ? "Close menu" : "Open menu")
+        menuPanel.setAttribute("aria-hidden", String(!open))
+        menuPanel.classList.toggle("pointer-events-none", !open)
+        menuPanel.classList.toggle("max-h-0", !open)
+        menuPanel.classList.toggle("opacity-0", !open)
+        menuPanel.classList.toggle("max-h-[600px]", open)
+        menuPanel.classList.toggle("opacity-100", open)
+
+        menuBars[0]?.classList.toggle("translate-y-[7px]", open)
+        menuBars[0]?.classList.toggle("rotate-45", open)
+        menuBars[1]?.classList.toggle("opacity-0", open)
+        menuBars[2]?.classList.toggle("-translate-y-[7px]", open)
+        menuBars[2]?.classList.toggle("-rotate-45", open)
+    }
+
+    menuButton?.addEventListener("click", () => {
+        setMenuOpen(menuButton.getAttribute("aria-expanded") !== "true")
+    })
+    menuPanel?.querySelectorAll('a[href^="#"]').forEach((link) => {
+        link.addEventListener("click", () => setMenuOpen(false))
+    })
+
+    const contactForm = document.querySelector("#contact form")
+    if (contactForm) {
+        const submitButton = contactForm.querySelector('button[type="submit"]')
+        const defaultButtonLabel = submitButton?.textContent || "Send the letter"
+        const status = document.createElement("p")
+        status.className = "mt-3 font-gothic text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-soft"
+        status.setAttribute("role", "status")
+        status.setAttribute("aria-live", "polite")
+        contactForm.appendChild(status)
+
+        contactForm.addEventListener("submit", async (event) => {
+            event.preventDefault()
+            const data = new FormData(contactForm)
+            if (String(data.get("company") || "")) return
+
+            if (submitButton) {
+                submitButton.disabled = true
+                submitButton.textContent = "Sending…"
+            }
+            status.textContent = ""
+
+            try {
+                const response = await fetch("/api/contact", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        name: String(data.get("name") || ""),
+                        email: String(data.get("email") || ""),
+                        subject: String(data.get("subject") || "Project enquiry"),
+                        message: String(data.get("message") || ""),
+                        company: ""
+                    })
+                })
+                if (!response.ok) throw new Error("Message failed to send")
+
+                contactForm.reset()
+                status.textContent = "Letter sent. Thank you — he’ll be in touch soon."
+            } catch {
+                status.textContent = "Message could not be sent. Email directly: "
+                const emailLink = document.createElement("a")
+                emailLink.href = "mailto:nguyenvtt.dev@gmail.com"
+                emailLink.textContent = "nguyenvtt.dev@gmail.com"
+                emailLink.className = "link-pencil"
+                status.appendChild(emailLink)
+            } finally {
+                if (submitButton) {
+                    submitButton.disabled = false
+                    submitButton.textContent = defaultButtonLabel
+                }
+            }
+        })
+    }
+
     document.addEventListener("click", (event) => {
         const homeLink = event.target.closest("[data-home-link]")
         if (!homeLink || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
@@ -268,12 +337,17 @@
     }, true)
 
     const pageUrl = new URL(window.location.href)
-    const skipInitialIntro = pageUrl.searchParams.get("skipIntro") === "1"
-    if (skipInitialIntro) {
-        pageUrl.searchParams.delete("skipIntro")
+    const playInitialIntro = pageUrl.searchParams.get("intro") === "1"
+    const hasIntroParameter = pageUrl.searchParams.has("intro") || pageUrl.searchParams.has("skipIntro")
+    pageUrl.searchParams.delete("intro")
+    pageUrl.searchParams.delete("skipIntro")
+    if (hasIntroParameter) {
         window.history.replaceState(null, "", `${pageUrl.pathname}${pageUrl.search}${pageUrl.hash}`)
-        requestAnimationFrame(() => animateCurrentDate())
-    } else {
+    }
+
+    // Keep the cinematic intro available on demand without making first paint
+    // wait for a multi-second animation. Add ?intro=1 to deep-link to it.
+    if (playInitialIntro) {
         window.addEventListener("rt-intro-done", () => {
             window.setTimeout(animateCurrentDate, 480)
         }, { once: true })
@@ -281,5 +355,7 @@
             requestAnimationFrame(() => animateCurrentDate())
         }
         requestAnimationFrame(() => startIntro())
+    } else {
+        requestAnimationFrame(() => animateCurrentDate())
     }
 })()
