@@ -145,9 +145,8 @@
                 { x: width / 2, y: height / 2 }
             ]
         })() : []
-        // Keep the automatic search easy to follow without making the
-        // preloader overstay its welcome. Five legs take about 1.6 seconds.
-        const autoLegDuration = 320
+        // Five search legs at 500 ms each make the full scan last 2.5 seconds.
+        const autoLegDuration = 500
         const autoStartedAt = performance.now()
 
         const draw = (time = performance.now()) => {
