@@ -145,7 +145,9 @@
                 { x: width / 2, y: height / 2 }
             ]
         })() : []
-        const autoLegDuration = 120
+        // Keep the automatic search easy to follow without making the
+        // preloader overstay its welcome. Five legs take about 1.6 seconds.
+        const autoLegDuration = 320
         const autoStartedAt = performance.now()
 
         const draw = (time = performance.now()) => {
@@ -236,7 +238,14 @@
         }
 
         const moveLens = (event) => {
-            if (locked || autoPilotActive) return
+            if (locked) return
+
+            // Any real pointer input immediately hands the magnifying glass
+            // to the visitor; otherwise the four-side search continues.
+            if (autoPilotActive) {
+                autoPilotActive = false
+                hint.textContent = `You have control — find ${name}`
+            }
             x = event.clientX
             y = event.clientY
             lastMove = performance.now()
