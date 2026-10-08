@@ -369,7 +369,7 @@
                     throw new Error("Submission failed")
                 }
                 contactForm.reset()
-                status.textContent = "Thank you for submitting. He will respond soon."
+                window.alert("Thank you for submitting. He will respond soon.")
             } catch {
                 status.textContent = "Your message could not be sent. Please try again or email "
                 const emailLink = document.createElement("a")
