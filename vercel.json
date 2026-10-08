@@ -101,6 +101,22 @@
     {
       "source": "/case-files/triosis-digital/",
       "destination": "/case-files/triosis-digital/index.html"
+    },
+    {
+      "source": "/case-files/teamsive",
+      "destination": "/case-files/teamsive/index.html"
+    },
+    {
+      "source": "/case-files/teamsive/",
+      "destination": "/case-files/teamsive/index.html"
+    },
+    {
+      "source": "/case-files/scholars",
+      "destination": "/case-files/scholars/index.html"
+    },
+    {
+      "source": "/case-files/scholars/",
+      "destination": "/case-files/scholars/index.html"
     }
   ],
   "headers": [

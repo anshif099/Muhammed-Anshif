@@ -1,4 +1,19 @@
 (() => {
+
+    // Reuse the existing reveal styles for every exhibit, including mobile apps.
+    const revealNodes = document.querySelectorAll('.rv')
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return
+                entry.target.classList.add('is-revealed')
+                observer.unobserve(entry.target)
+            })
+        }, { threshold: 0.08 })
+        document.documentElement.classList.add('js-motion')
+        revealNodes.forEach((node) => observer.observe(node))
+    }
+
     const subjectName = "Muhammed Anshif"
     const columnNames = [
         "The Morning Brief",
@@ -314,46 +329,57 @@
         const submitButton = contactForm.querySelector('button[type="submit"]')
         const defaultButtonLabel = submitButton?.textContent || "Send the letter"
         const status = document.createElement("p")
-        status.className = "mt-3 font-gothic text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-soft"
+        status.className = "mt-3 font-text text-[17px] text-ink-soft"
         status.setAttribute("role", "status")
         status.setAttribute("aria-live", "polite")
         contactForm.appendChild(status)
+        let sending = false
 
         contactForm.addEventListener("submit", async (event) => {
             event.preventDefault()
+            if (sending) return
             const data = new FormData(contactForm)
             if (String(data.get("company") || "")) return
-
+            sending = true
+            status.textContent = ""
             if (submitButton) {
                 submitButton.disabled = true
                 submitButton.textContent = "Sending…"
             }
-            status.textContent = ""
-
+            const subject = String(data.get("subject") || "Project enquiry").trim()
+            const controller = new AbortController()
+            const timeout = setTimeout(() => controller.abort(), 20000)
             try {
-                const response = await fetch("/api/contact", {
+                const response = await fetch("https://formsubmit.co/ajax/muhdanshif03@gmail.com", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                    signal: controller.signal,
                     body: JSON.stringify({
                         name: String(data.get("name") || ""),
                         email: String(data.get("email") || ""),
-                        subject: String(data.get("subject") || "Project enquiry"),
+                        phone: String(data.get("phone") || ""),
+                        subject: subject || "Project enquiry",
                         message: String(data.get("message") || ""),
-                        company: ""
+                        _subject: "Portfolio enquiry: " + (subject || "Project enquiry"),
+                        _template: "table"
                     })
                 })
-                if (!response.ok) throw new Error("Message failed to send")
-
+                const result = await response.json()
+                if (!response.ok || (result.success !== true && result.success !== "true")) {
+                    throw new Error("Submission failed")
+                }
                 contactForm.reset()
-                status.textContent = "Letter sent. Thank you — he’ll be in touch soon."
+                status.textContent = "Thank you for submitting. He will respond soon."
             } catch {
-                status.textContent = "Message could not be sent. Email directly: "
+                status.textContent = "Your message could not be sent. Please try again or email "
                 const emailLink = document.createElement("a")
-                emailLink.href = "mailto:nguyenvtt.dev@gmail.com"
-                emailLink.textContent = "nguyenvtt.dev@gmail.com"
+                emailLink.href = "mailto:muhdanshif03@gmail.com"
                 emailLink.className = "link-pencil"
+                emailLink.textContent = "muhdanshif03@gmail.com"
                 status.appendChild(emailLink)
             } finally {
+                clearTimeout(timeout)
+                sending = false
                 if (submitButton) {
                     submitButton.disabled = false
                     submitButton.textContent = defaultButtonLabel
