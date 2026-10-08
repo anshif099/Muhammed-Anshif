@@ -333,6 +333,25 @@
         status.setAttribute("role", "status")
         status.setAttribute("aria-live", "polite")
         contactForm.appendChild(status)
+        const popupStyle = document.createElement("style")
+        popupStyle.textContent = `
+            .contact-confirmation { position: fixed; inset: 0; margin: auto; width: min(460px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow: auto; box-sizing: border-box; padding: 36px 28px 28px; border: 2px solid #191711; background: #f3f0e7; color: #191711; text-align: center; box-shadow: 8px 8px 0 rgba(25,23,17,.2); }
+            .contact-confirmation::backdrop { background: rgba(25,23,17,.55); }
+            .contact-confirmation h2 { margin: 0 0 14px; font-family: caslonDisplay, Georgia, serif; font-size: 38px; font-weight: 400; line-height: 1.1; }
+            .contact-confirmation p { margin: 0 0 28px; font-family: caslonText, Georgia, serif; font-size: 18px; line-height: 1.6; }
+            .contact-confirmation button { min-width: 120px; min-height: 48px; padding: 12px 32px; border: 2px solid #191711; background: #191711; color: #f3f0e7; font-family: Arial, sans-serif; font-size: 14px; font-weight: 700; letter-spacing: .1em; cursor: pointer; }
+            .contact-confirmation button:hover { background: #f3f0e7; color: #191711; }
+            .contact-confirmation button:focus-visible { outline: 2px solid #191711; outline-offset: 4px; }
+        `
+        document.head.appendChild(popupStyle)
+        const confirmation = document.createElement("dialog")
+        confirmation.className = "contact-confirmation"
+        confirmation.setAttribute("aria-labelledby", "contact-confirmation-title")
+        confirmation.setAttribute("aria-describedby", "contact-confirmation-message")
+        confirmation.innerHTML = '<h2 id="contact-confirmation-title">Thank you.</h2><p id="contact-confirmation-message">Thank you for submitting. He will respond soon.</p><button type="button" autofocus>OK</button>'
+        document.body.appendChild(confirmation)
+        confirmation.querySelector("button").addEventListener("click", () => confirmation.close())
+        confirmation.addEventListener("close", () => submitButton?.focus())
         let sending = false
 
         contactForm.addEventListener("submit", async (event) => {
@@ -369,7 +388,7 @@
                     throw new Error("Submission failed")
                 }
                 contactForm.reset()
-                window.alert("Thank you for submitting. He will respond soon.")
+                confirmation.showModal()
             } catch {
                 status.textContent = "Your message could not be sent. Please try again or email "
                 const emailLink = document.createElement("a")
